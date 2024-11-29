@@ -1,17 +1,33 @@
-const { createUserDB } = require("../controllers/usersControllers");
+const { createUserDB, getUserById, getAllUsers, getUserByName } = require("../controllers/usersControllers");
 
-getUsersHandlers = (req, res) => {
-    const {name, email} = req.query;
-    if(name) {
-        res.status(200).send(`Aqui esta el usuario ${name}`)
-    }else{
-        res.status(200).send("Todos los Usuario")
+getUsersHandlers = async (req, res) => {
+    const {name} = req.query;
+
+    try {
+        if(name){
+            const userByName = await getUserByName(name)
+                res.status(200).json(userByName);
+        }else{
+            const response = await getAllUsers()
+                res.status(200).json(response);
+        }
+    } catch (error) {
+        res.status(400).json({error: error.message});
     }
+    
 }
 
-getDetalaisHandlers = (req, res) =>{
+getDetalaisHandlers = async (req, res) =>{
     const {id} = req.params;
-    res.status(200).send(`Detalle del usuario ${id}`)
+
+    const source = isNaN(id) ? "bdd" : "api";
+
+    try {
+        const response = await getUserById(id, source);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(400).json({error: error.message});
+    }
 }
 
 createUsersHandlers = async (req, res) => {
